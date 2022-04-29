@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -25,7 +25,7 @@ from .jwt_views import DecoratedTokenObtainPairView, DecoratedTokenRefreshView, 
 # region Swagger UI
 schema_view = get_schema_view(
    openapi.Info(
-      title="Snippets API",
+      title="User Management API",
       default_version='v1',
       description="Test description",
       terms_of_service="https://www.google.com/policies/terms/",
@@ -53,4 +53,5 @@ token_urls = [
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/user/', include('user.urls')),
 ] + swagger_urls + token_urls

@@ -27,7 +27,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         Checks if only one admin user exists in the database.
         """
-        if not self.pk and User.objects.filter(is_superuser=True).exists():
+        if self.is_superuser and User.objects.filter(is_superuser=True).exclude(pk=self.pk).exists():
             raise ValueError('An Admin User already exists.')
         return super().save(*args, **kwargs)
 

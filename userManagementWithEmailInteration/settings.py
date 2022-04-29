@@ -142,7 +142,22 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
+
+# region DRF YASG
+SWAGGER_SETTINGS = {
+      'SECURITY_DEFINITIONS': {
+         'DRF Token': {
+               'type': 'apiKey',
+               'name': 'Authorization',
+               'in': 'header'
+         }
+      }
+   }
+# endregion
 
 # region Simple JWT Settings
 SIMPLE_JWT = {
