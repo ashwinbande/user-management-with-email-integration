@@ -54,4 +54,5 @@ token_urls = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/user/', include('user.urls')),
+    path('api/nylas/', include('nylas_email_app.urls')),
 ] + swagger_urls + token_urls

@@ -47,6 +47,7 @@ OTHER_APPS = [
 
 PROJECT_APPS = [
     'user',
+    'nylas_email_app',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + OTHER_APPS + PROJECT_APPS
