@@ -1,0 +1,31 @@
+version: '3.8'
+services:
+ db:
+   image: postgres:14.2
+   restart: always
+   container_name: db-for-user-management-with-email
+   environment:
+     - POSTGRES_DB=${POSTGRES_DB_NAME}
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+   ports:
+     - ${POSTGRES_PORT}:5432
+   volumes:
+     - ./postgres-data:/var/lib/postgresql/data
+ redis:
+   image: redis:7.0.0-alpine
+   restart: always
+   container_name: redis-server-for-user-management-with-email
+   ports:
+     - ${REDIS_PORT}:6379
+   volumes:
+     - ./redis-data:/data
+volumes:
+ pgdata:
+   driver: local
+   driver_opts:
+     device: ./postgres-data
+ redis-data:
+   driver: local
+   driver_opts:
+     device: ./redis-data

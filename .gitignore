@@ -1,5 +1,7 @@
 *.sqlite3
 venv/
+postgres-data/
+redis-data/
 .env
 .idea/
 

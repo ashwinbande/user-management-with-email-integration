@@ -38,3 +38,36 @@ in user creation view.
 * the django user model provides a handy way to create a random password, I will use it.
 * apparently we can't modify the `serializer.data` directly and the password serializer returns the hashed 
   password so need to override the `create` method of the view to return the plain text password.
+
+
+### Problem with Docker, Postgres and Django psycopg2-binary/psycopg2
+As I am planning to install postgres on a docker container,
+I couldn't be able to install `psycopg2` or `psycopg2-binary` in my virtualenv.
+After a lot of research,
+I found that my system required at least postgres client library `brew install libpq` to install `psycopg2-binary`.
+
+refer https://stackoverflow.com/questions/44654216/correct-way-to-install-psql-without-full-postgres-on-macos/49689589#49689589
+to install postgres client library in osx.
+
+then symlink the postgres `pg_config` executable to `/usr/local/bin` do
+
+```
+sudo ln -s /opt/homebrew/Cellar/libpq/14.2/bin/pg_config /usr/local/bin/pg_config
+```
+if you want `psql`, simulate it as well, but it wasn't necessary for `psycopg2-binary` to work.
+
+
+also needed to install openssl on the host machine through brew and set the flags (temporarily)
+```
+export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
+```
+in the terminal to install, then `pip --no-cache install psycopg2-binary` was successful.
+
+
+### Nylas
+I have decided to first implement the Nylas API integration without Redis or Celery.
+Therefore, the API will be when user requests the list of emails, we fetch it with Nylas API
+and return it to the user, each time.
+This will be useful to completely understand Nylas API,
+without the distraction of Redis or Celery.
