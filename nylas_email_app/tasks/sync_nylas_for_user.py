@@ -162,7 +162,7 @@ def save_thread_with_messages(thread, user: NylasUserAccount, nylas):
 
 
 @shared_task
-def sync_nylas_for_user(user_id: str):
+def sync_nylas_for_user(user_id: str, resync=False):
     try:
         user = NylasUserAccount.objects.get(id=user_id)
     except NylasUserAccount.DoesNotExist:
@@ -177,10 +177,20 @@ def sync_nylas_for_user(user_id: str):
     except Exception as e:
         raise ValidationError(detail=e)
     else:
+        # check of sync status from nylas
+        account = nylas.account
+        if account.sync_state != 'running':
+            return 'Sync is not running'
+
         # for thread in nylas.threads.all():
-        sync_after_datetime = timezone.now() - timedelta(days=config('LAST_N_DAYS_SYNC', cast=int))
+        if resync:
+            sync_days = config('LAST_N_DAYS_RESYNC', cast=int)
+        else:
+            sync_days = config('LAST_N_DAYS_SYNC', cast=int)
+
+        sync_after_datetime = timezone.now() - timedelta(days=sync_days)
         after_timestamp = int(mktime(sync_after_datetime.timetuple()))
-        for thread in nylas.threads.where(started_after=after_timestamp):
+        for thread in nylas.threads.where(last_message_after=after_timestamp):
             # saving with atomic transaction so
             # the overhead of saving is minimal
             with transaction.atomic():

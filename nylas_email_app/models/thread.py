@@ -4,6 +4,7 @@ from django.utils.functional import cached_property
 from .user_account import NylasUserChildMixin
 from .folder import Folder
 from .label import Label
+from .participant import Participant
 
 
 class Thread(NylasUserChildMixin):
@@ -37,12 +38,7 @@ class Thread(NylasUserChildMixin):
 
     @cached_property
     def participants(self):
-        # kind of inefficient
-        persons = set()
-        for message in self.message_set.prefetch_related('messageparticipant_set__participant').all():
-            for participant in message.base_participants.all():
-                persons.add(participant.participant)
-        return persons
+        return Participant.objects.filter(messageparticipant__message__thread_id=self).distinct()
 
     @cached_property
     def snippet(self):

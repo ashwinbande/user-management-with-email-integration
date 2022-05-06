@@ -71,3 +71,16 @@ Therefore, the API will be when user requests the list of emails, we fetch it wi
 and return it to the user, each time.
 This will be useful to completely understand Nylas API,
 without the distraction of Redis or Celery.
+
+
+### Nylas date format
+Nylas API returns the date as unix timestamp. so I am storing it as an Integer.
+
+The API will also return the same, the front end will need to convert it to a date format,
+which shouldn't be an issue.
+
+
+### Assumption for date filter in threads
+I am assuming date filter in thread will work as follows:
+for a given `from_date`, the `first_message_received_timestamp` should be greater than or equal to the `from_date`.
+for a given `to_date`, the `last_message_received_timestamp` should be less than or equal to the `to_date`.

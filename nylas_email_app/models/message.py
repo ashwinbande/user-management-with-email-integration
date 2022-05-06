@@ -3,7 +3,6 @@ from django.utils.functional import cached_property
 
 from .user_account import NylasUserChildMixin
 from .folder import Folder
-from .label import Label
 from .thread import Thread
 from .participant import Participant
 
@@ -24,7 +23,6 @@ class Message(NylasUserChildMixin):
     thread_id = models.ForeignKey(Thread, on_delete=models.CASCADE, null=True, default=None)
 
     unread = models.BooleanField(default=True)
-    # labels = models.ManyToManyField(Label, related_name='messages')
 
     # saving as string because foreignkey requires that object tobe created first
     # might be able to correct this in the future
@@ -60,6 +58,10 @@ class Message(NylasUserChildMixin):
     def to(self):
         return self.base_participants.filter(type='to')
 
+    @cached_property
+    def labels(self):
+        return self.thread_id.labels.all()
+
 
 class MessageParticipant(models.Model):
     participant_type_choices = (
@@ -78,4 +80,3 @@ class MessageParticipant(models.Model):
 
     class Meta:
         verbose_name = 'Message Participant'
-        # unique_together = ('message', 'participant')
