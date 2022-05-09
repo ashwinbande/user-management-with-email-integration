@@ -161,12 +161,12 @@ def save_thread_with_messages(thread, user: NylasUserAccount, nylas):
         save_message_by_id(message_id, thread_instance, nylas)
 
 
-@shared_task
-def sync_nylas_for_user(user_id: str, resync=False):
+def get_nylas_instance(user_id: str):
     try:
         user = NylasUserAccount.objects.get(id=user_id)
     except NylasUserAccount.DoesNotExist:
-        raise ValidationError('User does not exist')
+        print(f'NylasUserAccount does not exist {user_id}')
+        return None, None
 
     try:
         nylas = APIClient(
@@ -175,23 +175,46 @@ def sync_nylas_for_user(user_id: str, resync=False):
             user.access_token,
         )
     except Exception as e:
-        raise ValidationError(detail=e)
+        print(f'Exception Occurred connecting nylas API Client {e}')
+        return None, None
+
+    return user, nylas
+
+
+@shared_task
+def sync_nylas_for_user(user_id: str, resync=False):
+    user, nylas = get_nylas_instance(user_id)
+    if not user or not nylas:
+        return
+
+    # check of sync status from nylas
+    account = nylas.account
+    if account.sync_state != 'running':
+        print(f'Sync is not running on user {user_id}')
+        return
+
+    # for thread in nylas.threads.all():
+    if resync:
+        sync_days = config('LAST_N_DAYS_RESYNC', cast=int)
     else:
-        # check of sync status from nylas
-        account = nylas.account
-        if account.sync_state != 'running':
-            return 'Sync is not running'
+        sync_days = config('LAST_N_DAYS_SYNC', cast=int)
 
-        # for thread in nylas.threads.all():
-        if resync:
-            sync_days = config('LAST_N_DAYS_RESYNC', cast=int)
-        else:
-            sync_days = config('LAST_N_DAYS_SYNC', cast=int)
+    sync_after_datetime = timezone.now() - timedelta(days=sync_days)
+    after_timestamp = int(mktime(sync_after_datetime.timetuple()))
+    for thread in nylas.threads.where(last_message_after=after_timestamp):
+        # saving with atomic transaction so
+        # the overhead of saving is minimal
+        with transaction.atomic():
+            save_thread_with_messages(thread, user, nylas)
 
-        sync_after_datetime = timezone.now() - timedelta(days=sync_days)
-        after_timestamp = int(mktime(sync_after_datetime.timetuple()))
-        for thread in nylas.threads.where(last_message_after=after_timestamp):
-            # saving with atomic transaction so
-            # the overhead of saving is minimal
-            with transaction.atomic():
-                save_thread_with_messages(thread, user, nylas)
+
+@shared_task
+def update_thread_from_webhook_delta(account_id: str, thread_id: str):
+    print(f'Updating thread {thread_id} for account {account_id}')
+    user, nylas = get_nylas_instance(account_id)
+    if not user or not nylas:
+        return
+
+    thread = nylas.threads.get(thread_id)
+    with transaction.atomic():
+        save_thread_with_messages(thread, user, nylas)

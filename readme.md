@@ -10,3 +10,10 @@
 8. open `http://localhost:8000/swagger/`
 
 **Please create a superuser using `python manage.py createsuperuser`**
+
+
+### webhooks
+1. Link local app to the internet using **ngrok**.
+2. Place the `<ngrock_url>/webhooks/` in your webhook url in nylas application.
+3. Done.
+4. To test, open, create, or reply to a mail linked in nylas application.
