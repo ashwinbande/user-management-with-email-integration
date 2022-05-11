@@ -194,5 +194,5 @@ CELERY_TIMEZONE = TIME_ZONE
 
 
 # region WhiteNoise Settings
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 # endregion
