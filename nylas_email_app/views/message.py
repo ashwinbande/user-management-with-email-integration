@@ -2,19 +2,27 @@ from functools import reduce
 
 from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
+from django_filters import rest_framework as filters
+
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.filters import SearchFilter
 
 from .mixins import ListModelMixin
 
 from ..serializers import MessageSerializer, SearchSerializer
 from ..models import Message
 
+from .filters import MessageFilter
+
 
 class MessageViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     serializer_class = MessageSerializer
+    filter_backends = (filters.DjangoFilterBackend, SearchFilter)
+    filter_class = MessageFilter
+    search_fields = ('subject', 'snippet')
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
