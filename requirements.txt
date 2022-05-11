@@ -47,4 +47,5 @@ urllib3==1.26.9
 URLObject==2.4.3
 vine==5.0.0
 wcwidth==0.2.5
+whitenoise==6.1.0
 wrapt==1.14.1
